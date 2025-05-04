@@ -1,3 +1,4 @@
+%define keepstatic 1
 Name:       libkeepalive
 Summary:    CPU and display keepalive and scheduling library
 Version:    1.8.4
@@ -72,6 +73,12 @@ Requires:   %{name}-glib = %{version}-%{release}
 %description glib-devel
 Development package for CPU and display keepalive and scheduling library
 
+%package glib-devel-static
+Summary:    Development headers for libkeepalive for use with glib
+
+%description glib-devel-static
+Development package for CPU and display keepalive and scheduling library
+
 %package    glib-doc
 Summary:    Documentation for libkeepalive-glib
 BuildArch:  noarch
@@ -114,6 +121,9 @@ make -C tools install ROOT=%{buildroot} VERS=%{version} _LIBDIR=%{_libdir}
 %{_libdir}/pkgconfig/keepalive.pc
 %dir %{_includedir}/keepalive
 %{_includedir}/keepalive/*.h
+
+%files glib-devel-static
+%{_libdir}/libkeepalive-glib.a
 
 %files examples
 %{_libdir}/qt5/bin/backgroundactivity_periodic

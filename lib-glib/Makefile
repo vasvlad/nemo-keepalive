@@ -15,6 +15,7 @@ SO_NAME  ?= .so.1
 
 TARGETS  += libkeepalive-glib$(SO_VERS)
 TARGETS  += keepalive-glib.pc
+TARGETS  += libkeepalive-glib.a
 
 # ----------------------------------------------------------------------------
 # Standard install directories
@@ -75,8 +76,10 @@ CFLAGS   += -Wmissing-prototypes
 CXXFLAGS += $(COMMON)
 
 LDFLAGS  += -g
+BASELDFLAGS := $(LDFLAGS)
 
 LDLIBS   += -Wl,--as-needed
+BASELDLIBS := $(LDLIBS)
 
 # ----------------------------------------------------------------------------
 # Flags from pkg-config
@@ -96,20 +99,21 @@ endif
 ifneq ($(strip $(PKG_NAMES)),)
 PKG_CONFIG   ?= pkg-config
 PKG_CFLAGS   := $(shell $(PKG_CONFIG) --cflags $(PKG_NAMES))
-PKG_LDLIBS   := $(shell $(PKG_CONFIG) --libs   $(PKG_NAMES))
+PKG_LDLIBS_DYNAMIC   := $(shell $(PKG_CONFIG) --libs   $(PKG_NAMES))
 PKG_CPPFLAGS := $(filter -D%,$(PKG_CFLAGS)) $(filter -I%,$(PKG_CFLAGS))
 PKG_CFLAGS   := $(filter-out -I%, $(filter-out -D%, $(PKG_CFLAGS)))
 endif
 
 CPPFLAGS += $(PKG_CPPFLAGS)
 CFLAGS   += $(PKG_CFLAGS)
-LDLIBS   += $(PKG_LDLIBS)
+LDLIBS   += $(PKG_LDLIBS_DYNAMIC)
 
 # ----------------------------------------------------------------------------
 # Implicit rules
 # ----------------------------------------------------------------------------
 
-%$(SO_VERS) : LDFLAGS += -shared -Wl,-soname,$*$(SO_NAME)
+%$(SO_VERS) : LDLIBS = $(BASELDLIBS) $(PKG_LDLIBS_DYNAMIC) 
+%$(SO_VERS) : LDFLAGS = $(BASELDFLAGS) -shared -Wl,-soname,$*$(SO_NAME)
 
 %$(SO_VERS) :
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -176,6 +180,24 @@ LIBRARY_OBJ := $(patsubst %.c,%.pic.o,$(LIBRARY_SRC))
 
 libkeepalive-glib$(SO_VERS): $(LIBRARY_OBJ)
 
+
+LDLIBS   += -Wl,--as-needed
+LDFLAGS = $(BASELDFLAGS)
+LDFLAGS += -static 
+PKG_CONFIG   ?= pkg-config
+PKG_CFLAGS   := $(shell $(PKG_CONFIG) --static --cflags $(PKG_NAMES))
+PKG_LDLIBS   := $(shell $(PKG_CONFIG) --static --libs   $(PKG_NAMES))
+PKG_CPPFLAGS := $(filter -D%,$(PKG_CFLAGS)) $(filter -I%,$(PKG_CFLAGS))
+PKG_CFLAGS   := $(filter-out -I%, $(filter-out -D%, $(PKG_CFLAGS)))
+
+CPPFLAGS += $(PKG_CPPFLAGS)
+CFLAGS   += $(PKG_CFLAGS)
+LDLIBS   += $(PKG_LDLIBS)
+
+
+
+libkeepalive-glib.a: $(LIBRARY_OBJ) 
+	ar rcs libkeepalive-glib.a $(LIBRARY_OBJ)
 # ----------------------------------------------------------------------------
 # Documentation rules
 # ----------------------------------------------------------------------------
@@ -203,6 +225,7 @@ install::
 	install -m755 -d $(ROOT)$(_LIBDIR)/
 	install -m755 libkeepalive-glib$(SO_VERS) $(ROOT)$(_LIBDIR)/
 	ln -sf  libkeepalive-glib$(SO_VERS) $(ROOT)$(_LIBDIR)/libkeepalive-glib.so
+	install -m755 libkeepalive-glib.a $(ROOT)$(_LIBDIR)/
 
 	install -m755 -d $(ROOT)$(_INCLUDEDIR)/keepalive-glib/
 	install -m644 $(LIBRARY_HDR) $(ROOT)$(_INCLUDEDIR)/keepalive-glib/
