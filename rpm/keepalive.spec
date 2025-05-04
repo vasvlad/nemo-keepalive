@@ -40,13 +40,6 @@ Requires:   %{name} = %{version}-%{release}
 %description examples
 Examples of CPU and display keepalive and scheduling library
 
-%package tests
-Summary:    Tests for libkeepalive
-Requires:   %{name} = %{version}-%{release}
-
-%description tests
-%{summary}.
-
 %package doc
 Summary:    Documentation for libkeepalive QML API
 BuildArch:  noarch
@@ -100,6 +93,7 @@ export VERSION=`echo %{version} | sed 's/+.*//'`
 make install INSTALL_ROOT=%{buildroot}
 make -C lib-glib install ROOT=%{buildroot} VERS=%{version} _LIBDIR=%{_libdir}
 make -C tools install ROOT=%{buildroot} VERS=%{version} _LIBDIR=%{_libdir}
+make -C mpvplugin install ROOT=%{buildroot} VERS=%{version} _LIBDIR=%{_libdir}
 
 %post -p /sbin/ldconfig
 
@@ -124,15 +118,13 @@ make -C tools install ROOT=%{buildroot} VERS=%{version} _LIBDIR=%{_libdir}
 
 %files glib-devel-static
 %{_libdir}/libkeepalive-glib.a
+%{_libdir}/keepdisplayonplugin.a
 
 %files examples
 %{_libdir}/qt5/bin/backgroundactivity_periodic
 %{_libdir}/qt5/bin/backgroundactivity_linger
 %{_libdir}/qt5/bin/displayblanking
 %{_libdir}/qt5/examples/keepalive/*.qml
-
-%files tests
-/opt/tests/nemo-keepalive/*
 
 %files doc
 %dir %{_datadir}/doc/libkeepalive

@@ -6,7 +6,8 @@ SUBDIRS += plugin
 SUBDIRS += examples/backgroundactivity_periodic
 SUBDIRS += examples/backgroundactivity_linger
 SUBDIRS += examples/displayblanking
-SUBDIRS += tests
+SUBDIRS += mpvplugin
+#SUBDIRS += tests
 SUBDIRS += doc
 
 examples.files = examples/qml/*.qml
